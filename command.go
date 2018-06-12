@@ -12,11 +12,16 @@ import (
 )
 
 type Tip struct {
-	Id int64
-	FromId int64
-	ToId int64
-	MessageId int64
+	Id int
+	FromId int
+	ToId int
+	MessageId int
 	Amount int64
+}
+
+func (tip *Tip) Create() error {
+	DB.Create(tip)
+	return DB.Error
 }
 
 func (message *Message) HelpHandler() string {
@@ -106,7 +111,7 @@ func (message *Message) WithdrawHandler(tmessage *telebot.Message) string {
 	}
 
 	data := strings.Split(tmessage.Payload," ")
-	if len(data) < 3 {
+	if len(data) < 2 {
 		return "Please provide both address, amount and fee per byte"
 	}
 
@@ -120,7 +125,13 @@ func (message *Message) WithdrawHandler(tmessage *telebot.Message) string {
 		return "Please enter a valid amount"
 	}
 
-	if float64(user.Balance) <= amount {
+	withdrawal_fee, err := strconv.ParseInt(os.Getenv("WITHDRAWAL_FEE"), 10, 64)
+	if err != nil {
+		log.Println(err)
+		return "Something went wrong"
+	}
+
+	if user.Balance < int64(amount) + withdrawal_fee {
 		return "Insufficient balance"
 	}
 
@@ -140,7 +151,7 @@ func (message *Message) WithdrawHandler(tmessage *telebot.Message) string {
 		return "Please enter a valid amount"
 	}
 
-	fees, err := strconv.ParseFloat(data[2], 64)
+	/*fees, err := strconv.ParseFloat(data[2], 64)
 	if err != nil {
 		return "Please enter a valid fees"
 	}
@@ -149,7 +160,7 @@ func (message *Message) WithdrawHandler(tmessage *telebot.Message) string {
 	if err != nil {
 		log.Println(err)
 		return "Please enter a valid fees"
-	}
+	}*/
 
 	transaction := Transaction{
 		UserId: user.Id,
@@ -163,22 +174,22 @@ func (message *Message) WithdrawHandler(tmessage *telebot.Message) string {
 		return "Something went wrong"
 	}
 
-	user.Balance = user.Balance - int64(amount)
+	user.Balance = user.Balance - int64(amount) - withdrawal_fee
 	err = user.Update()
 	if err != nil {
 		log.Println(err)
 		return "Something went wrong"
 	}
 
-	err = Client.SetTxFee(fee_amount)
+	/*err = Client.SetTxFee(fee_amount)
 	if err != nil {
 		log.Println(err)
 		return "Something went wrong"
-	}
+	}*/
 
 	tx, err := Client.SendToAddress(address, withdrawal_amount)
 	if err != nil {
-		user.Balance = user.Balance + int64(amount)
+		user.Balance = user.Balance + int64(amount) + withdrawal_fee
 		user.Update()
 		log.Println(err)
 		return "Something went wrong"
@@ -218,7 +229,53 @@ func (message *Message) TipHandler(tmessage *telebot.Message) string {
 		return "Incorrect format"
 	}
 
-	return ""
+	amount, err := strconv.ParseInt(data[1], 10, 64)
+	if err != nil {
+		return "Please enter correct amount"
+	}
+
+	BalanceMutexes[user.Username].Lock()
+	BalanceMutexes[otheruser.Username].Lock()
+
+	if user.Balance < int64(amount) {
+		BalanceMutexes[user.Username].Unlock()
+		BalanceMutexes[otheruser.Username].Unlock()
+		return "Insufficient balance"
+	}
+
+	user.Balance = user.Balance - amount
+	user.Update()
+
+	otheruser.Balance = otheruser.Balance + amount
+	otheruser.Update()
+
+	tip := Tip{
+		FromId: user.Id,
+		ToId: otheruser.Id,
+		Amount:amount,
+		MessageId: message.Id,
+	}
+
+	err = tip.Create()
+	if err != nil {
+		log.Println(err)
+
+		user.Balance = user.Balance + amount
+		user.Update()
+
+		otheruser.Balance = otheruser.Balance - amount
+		otheruser.Update()
+
+		BalanceMutexes[user.Username].Unlock()
+		BalanceMutexes[otheruser.Username].Unlock()
+
+		return "Something went wrong"
+	}
+
+	BalanceMutexes[user.Username].Unlock()
+	BalanceMutexes[otheruser.Username].Unlock()
+
+	return user.Username + " tipped " + data[0] + " satoshis to " + otheruser.Username
 }
 
 func findUser(username string) (*User, error) {
