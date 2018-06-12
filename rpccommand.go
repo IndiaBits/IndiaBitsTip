@@ -1,6 +1,6 @@
 package main
 
-func generateAddress(username string) (string, error){
+func generateAddress() (string, error){
 	address, err := Client.GetNewAddress("")
 	if err != nil {
 		return "", err

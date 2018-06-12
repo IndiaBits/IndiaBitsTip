@@ -9,10 +9,12 @@ import (
 	"gopkg.in/tucnak/telebot.v2"
 	"time"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"sync"
 )
 
 var DB *gorm.DB
 var Client *rpcclient.Client
+var BalanceMutexes map[string]sync.Mutex
 
 func main() {
 	err := godotenv.Load()
@@ -42,7 +44,7 @@ func main() {
 
 func initRPC() {
 	connCfg := &rpcclient.ConnConfig{
-		Host:         "localhost:18332",
+		Host:         os.Getenv("RPC_HOST")+ ":"+os.Getenv("RPC_PORT"),
 		User:         os.Getenv("RPC_USER"),
 		Pass:         os.Getenv("RPC_PASS"),
 		HTTPPostMode: true,

@@ -3,6 +3,8 @@ package main
 import (
 	"gopkg.in/tucnak/telebot.v2"
 	"strings"
+	"github.com/jinzhu/gorm"
+	"log"
 )
 
 func InitTelegramCommands(bot *telebot.Bot) {
@@ -14,6 +16,7 @@ func InitTelegramCommands(bot *telebot.Bot) {
 		}
 		response := message.HelpHandler()
 		bot.Send(tmessage.Sender, response)
+		UpdateResponse(response, message)
 	})
 
 	bot.Handle("/register",func(tmessage *telebot.Message) {
@@ -24,6 +27,7 @@ func InitTelegramCommands(bot *telebot.Bot) {
 		}
 		response := message.RegisterHandler(tmessage)
 		bot.Send(tmessage.Sender, response)
+		UpdateResponse(response, message)
 	})
 
 	bot.Handle("/address",func(tmessage *telebot.Message) {
@@ -34,6 +38,7 @@ func InitTelegramCommands(bot *telebot.Bot) {
 		}
 		response := message.GetAddressHandler(tmessage)
 		bot.Send(tmessage.Sender, response)
+		UpdateResponse(response, message)
 	})
 
 	bot.Handle("/balance",func(tmessage *telebot.Message) {
@@ -42,8 +47,9 @@ func InitTelegramCommands(bot *telebot.Bot) {
 			response := err.Error()
 			bot.Send(tmessage.Sender, response)
 		}
-		response := message.HelpHandler()
+		response := message.BalanceHandler(tmessage)
 		bot.Send(tmessage.Sender, response)
+		UpdateResponse(response, message)
 	})
 
 	bot.Handle("/withdraw",func(tmessage *telebot.Message) {
@@ -52,18 +58,28 @@ func InitTelegramCommands(bot *telebot.Bot) {
 			response := err.Error()
 			bot.Send(tmessage.Sender, response)
 		}
-		response := message.HelpHandler()
-		bot.Send(tmessage.Sender, response)
-	})
 
-	bot.Handle("/withdraw",func(tmessage *telebot.Message) {
-		message, err := NewMessage(tmessage)
+		user, err := findUser(tmessage.Sender.Username)
 		if err != nil {
-			response := err.Error()
-			bot.Send(tmessage.Sender, response)
+			if err == gorm.ErrRecordNotFound {
+				response := "You must be registered to use the bot"
+				bot.Send(tmessage.Sender, response)
+				UpdateResponse(response, message)
+			} else {
+				log.Println(err)
+				response := "Something went wrong."
+				bot.Send(tmessage.Sender, response)
+				UpdateResponse(response, message)
+			}
 		}
-		response := message.HelpHandler()
+
+		BalanceMutexes[user.Username].Lock()
+
+		response := message.WithdrawHandler(tmessage)
+
+		BalanceMutexes[user.Username].Unlock()
 		bot.Send(tmessage.Sender, response)
+		UpdateResponse(response, message)
 	})
 
 	bot.Handle(telebot.OnText, func(tmessage *telebot.Message) {
@@ -73,7 +89,7 @@ func InitTelegramCommands(bot *telebot.Bot) {
 				response := err.Error()
 				bot.Send(tmessage.Sender, response)
 			}
-			response := message.HelpHandler()
+			response := message.TipHandler(tmessage)
 			bot.Send(tmessage.Sender, response)
 		}
 	})
