@@ -282,7 +282,15 @@ func findUser(username string) (*User, error) {
 	user := &User{
 		Username: username,
 	}
-	user, err := user.Find()
+	user, err := user.First()
+	return user, err
+}
+
+func findUserByAddress(address string) (*User, error) {
+	user := &User{
+		Address: address,
+	}
+	user, err := user.First()
 	return user, err
 }
 

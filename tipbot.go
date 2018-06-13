@@ -14,7 +14,7 @@ import (
 
 var DB *gorm.DB
 var Client *rpcclient.Client
-var BalanceMutexes map[string]sync.Mutex
+var BalanceMutexes map[string]*sync.Mutex
 
 func main() {
 	err := godotenv.Load()
@@ -26,6 +26,8 @@ func main() {
 	defer DB.Close()
 	initRPC()
 	defer Client.Shutdown()
+
+	go ProcessTransactions()
 
 	bot, err := telebot.NewBot(telebot.Settings{
 		Token:  os.Getenv("TELEGRAM_TOKEN"),

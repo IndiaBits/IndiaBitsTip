@@ -50,7 +50,7 @@ func storeMessage(tmessage *telebot.Message) (*Message, error) {
 	user := &User{
 		Username: message.Username,
 	}
-	user, err :=  user.Find()
+	user, err :=  user.First()
 	if err != nil {
 		if err != gorm.ErrRecordNotFound {
 			return nil,err

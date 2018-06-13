@@ -17,7 +17,7 @@ func (u *User) Update() (error) {
 	return err.Error
 }
 
-func (u *User) Find() (*User, error) {
-	err := DB.First(&u)
+func (u *User) First() (*User, error) {
+	err := DB.First(u)
 	return u, err.Error
 }
