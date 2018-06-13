@@ -33,8 +33,6 @@ func (message *Message) HelpHandler() string {
 	help_text += "\n\n\\withdraw <pay_req>: Withdraw your coins over lightning network(10 SAT Fees). DO NOT USE THE SAME PAYMENT REQUEST TWICE"
 	help_text += "\n\n\\balance: To check your balance"
 	help_text += "\n\n\\tip <amount>: Reply to any message with tip <amount> and the sender of the message will be tipped with the specified amount"
-
-	UpdateResponse(help_text, message)
 	return help_text
 }
 

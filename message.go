@@ -27,9 +27,9 @@ func (message *Message) create() error {
 
 
 func (message *Message) update() error {
-	err := DB.Update(message)
+	err := DB.Save(message)
 	if err.Error != nil {
-		log.Printf("Error occured while creating message: %v",err)
+		log.Printf("Error occured while updating message: %v",err)
 	}
 	return err.Error
 }
@@ -69,7 +69,7 @@ func storeMessage(tmessage *telebot.Message) (*Message, error) {
 }
 
 
-func UpdateResponse(response string, message *Message) {
+func UpdateResponse(response string, message Message) {
 	message.Response = response
 	message.RepliedAt = time.Now()
 	message.update()

@@ -16,7 +16,7 @@ func InitTelegramCommands(bot *telebot.Bot) {
 		}
 		response := message.HelpHandler()
 		bot.Send(tmessage.Sender, response)
-		UpdateResponse(response, message)
+		UpdateResponse(response, *message)
 	})
 
 	bot.Handle("/register",func(tmessage *telebot.Message) {
@@ -27,7 +27,7 @@ func InitTelegramCommands(bot *telebot.Bot) {
 		}
 		response := message.RegisterHandler(tmessage)
 		bot.Send(tmessage.Sender, response)
-		UpdateResponse(response, message)
+		UpdateResponse(response, *message)
 	})
 
 	bot.Handle("/address",func(tmessage *telebot.Message) {
@@ -38,7 +38,7 @@ func InitTelegramCommands(bot *telebot.Bot) {
 		}
 		response := message.GetAddressHandler(tmessage)
 		bot.Send(tmessage.Sender, response)
-		UpdateResponse(response, message)
+		UpdateResponse(response, *message)
 	})
 
 	bot.Handle("/balance",func(tmessage *telebot.Message) {
@@ -49,7 +49,7 @@ func InitTelegramCommands(bot *telebot.Bot) {
 		}
 		response := message.BalanceHandler(tmessage)
 		bot.Send(tmessage.Sender, response)
-		UpdateResponse(response, message)
+		UpdateResponse(response, *message)
 	})
 
 	bot.Handle("/withdraw",func(tmessage *telebot.Message) {
@@ -64,12 +64,12 @@ func InitTelegramCommands(bot *telebot.Bot) {
 			if err == gorm.ErrRecordNotFound {
 				response := "You must be registered to use the bot"
 				bot.Send(tmessage.Sender, response)
-				UpdateResponse(response, message)
+				UpdateResponse(response, *message)
 			} else {
 				log.Println(err)
 				response := "Something went wrong."
 				bot.Send(tmessage.Sender, response)
-				UpdateResponse(response, message)
+				UpdateResponse(response, *message)
 			}
 		}
 
@@ -79,7 +79,7 @@ func InitTelegramCommands(bot *telebot.Bot) {
 
 		BalanceMutexes[user.Username].Unlock()
 		bot.Send(tmessage.Sender, response)
-		UpdateResponse(response, message)
+		UpdateResponse(response, *message)
 	})
 
 	bot.Handle(telebot.OnText, func(tmessage *telebot.Message) {
@@ -91,6 +91,7 @@ func InitTelegramCommands(bot *telebot.Bot) {
 			}
 			response := message.TipHandler(tmessage)
 			bot.Send(tmessage.Sender, response)
+			UpdateResponse(response, *message)
 		}
 	})
 

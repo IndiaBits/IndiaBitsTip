@@ -29,7 +29,7 @@ func (transaction *Transaction) Update() error {
 
 func (transaction *Transaction) Find() ([]Transaction,error) {
 	var transactions []Transaction
-	DB.Find(transactions, transaction)
+	DB.Find(&transactions, transaction)
 	return transactions, DB.Error
 }
 
@@ -39,6 +39,7 @@ func (transaction *Transaction) First() (error) {
 }
 
 func ProcessTransactions() {
+	time.Sleep(10 * time.Second)
 	for {
 		transaction := Transaction{
 			Type:1,
@@ -100,6 +101,5 @@ func ProcessTransactions() {
 				}
 			}
 		}
-		time.Sleep(2 * time.Minute)
 	}
 }
