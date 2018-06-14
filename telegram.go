@@ -5,6 +5,7 @@ import (
 	"strings"
 	"github.com/jinzhu/gorm"
 	"log"
+	"sync"
 )
 
 func InitTelegramCommands(bot *telebot.Bot) {
@@ -71,6 +72,10 @@ func InitTelegramCommands(bot *telebot.Bot) {
 				bot.Send(tmessage.Sender, response)
 				UpdateResponse(response, *message)
 			}
+		}
+
+		if(BalanceMutexes[user.Username] == nil) {
+			BalanceMutexes[user.Username] = &sync.Mutex{}
 		}
 
 		BalanceMutexes[user.Username].Lock()

@@ -14,7 +14,7 @@ import (
 
 var DB *gorm.DB
 var Client *rpcclient.Client
-var BalanceMutexes map[string]*sync.Mutex
+var BalanceMutexes = make(map[string]*sync.Mutex)
 
 func main() {
 	err := godotenv.Load()

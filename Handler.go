@@ -9,6 +9,7 @@ import (
 	"github.com/btcsuite/btcutil"
 	"github.com/btcsuite/btcd/chaincfg"
 	"os"
+	"sync"
 )
 
 type Tip struct {
@@ -230,6 +231,14 @@ func (message *Message) TipHandler(tmessage *telebot.Message) string {
 	amount, err := strconv.ParseInt(data[1], 10, 64)
 	if err != nil {
 		return "Please enter correct amount"
+	}
+
+	if(BalanceMutexes[user.Username] == nil) {
+		BalanceMutexes[user.Username] = &sync.Mutex{}
+	}
+
+	if(BalanceMutexes[otheruser.Username] == nil) {
+		BalanceMutexes[otheruser.Username] = &sync.Mutex{}
 	}
 
 	BalanceMutexes[user.Username].Lock()
