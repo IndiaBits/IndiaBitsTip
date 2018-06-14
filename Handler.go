@@ -187,7 +187,7 @@ func (message *Message) WithdrawHandler(tmessage *telebot.Message) string {
 	transaction := Transaction{
 		UserId: user.Id,
 		Type: 2,
-		Amount: amount,
+		Amount: amount - withdrawal_fee,
 		MessageId: message.Id,
 		Confirmed:1,
 		Address:address.String(),
@@ -197,7 +197,7 @@ func (message *Message) WithdrawHandler(tmessage *telebot.Message) string {
 		return "Something went wrong"
 	}
 
-	user.Balance = user.Balance - amount - withdrawal_fee
+	user.Balance = user.Balance - amount
 	err = user.Update()
 	if err != nil {
 		log.Println(err)
@@ -212,7 +212,7 @@ func (message *Message) WithdrawHandler(tmessage *telebot.Message) string {
 
 	tx, err := Client.SendToAddress(address, withdrawal_amount)
 	if err != nil {
-		user.Balance = user.Balance + amount + withdrawal_fee
+		user.Balance = user.Balance + amount
 		user.Update()
 		log.Println(err)
 		return "Something went wrong"
