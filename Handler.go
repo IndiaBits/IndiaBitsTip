@@ -271,7 +271,7 @@ func (message *Message) TipHandler(tmessage *telebot.Message) string {
 		}
 
 		if amount <= 0 {
-			return "Please enter correct amount"
+			return "Cannot tip 0 or negative amount"
 		}
 	} else {
 		amount = user.Balance
