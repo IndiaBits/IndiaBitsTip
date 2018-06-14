@@ -9,7 +9,7 @@ import (
 type Transaction struct {
 	Id int
 	Type int
-	Amount int64
+	Amount float64
 	UserId int
 	Address string
 	MessageId int
@@ -43,7 +43,7 @@ func ProcessTransactions() {
 	for {
 		transaction := Transaction{
 			Type:1,
-			Confirmed:0,
+			Confirmed:1,
 		}
 
 		transactions, err := transaction.Find()
@@ -68,13 +68,15 @@ func ProcessTransactions() {
 			new_tx := Transaction{
 				Type:1,
 				Address: tx.Address,
-				Amount:int64(tx.Amount),
+				Amount:tx.Amount,
 				UserId:user.Id,
+				TransactionId:tx.TxID,
 			}
 
 			 err = new_tx.First()
 			if err != nil {
 				if err == gorm.ErrRecordNotFound {
+					log.Println("Found new transaction")
 					other_err := new_tx.Create()
 					if other_err != nil {
 						log.Println(err)
@@ -86,7 +88,7 @@ func ProcessTransactions() {
 				}
 			}
 
-			if tx.Confirmations > 2 {
+			if tx.Confirmations > 0 {
 				new_tx.Confirmed = 1
 				user.Balance = user.Balance + new_tx.Amount
 				err := user.Update()

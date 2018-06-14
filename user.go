@@ -4,7 +4,7 @@ type User struct {
 	Id int
 	Username string
 	Address string
-	Balance	int64
+	Balance	float64
 }
 
 func (u *User) Register() (error) {
@@ -18,6 +18,6 @@ func (u *User) Update() (error) {
 }
 
 func (u *User) First() (*User, error) {
-	err := DB.First(u)
+	err := DB.Where(u).First(u)
 	return u, err.Error
 }

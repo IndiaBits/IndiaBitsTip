@@ -95,7 +95,7 @@ func InitTelegramCommands(bot *telebot.Bot) {
 				bot.Send(tmessage.Sender, response)
 			}
 			response := message.TipHandler(tmessage)
-			bot.Send(tmessage.Sender, response)
+			bot.Send(tmessage.Chat, response)
 			UpdateResponse(response, *message)
 		}
 	})
