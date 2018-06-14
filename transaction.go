@@ -4,6 +4,7 @@ import (
 	"log"
 	"github.com/jinzhu/gorm"
 	"time"
+	"sync"
 )
 
 type Transaction struct {
@@ -34,31 +35,25 @@ func (transaction *Transaction) Find() ([]Transaction,error) {
 }
 
 func (transaction *Transaction) First() (error) {
-	err := DB.First(transaction)
+	err := DB.Where(transaction).First(transaction)
 	return err.Error
 }
 
 func ProcessTransactions() {
 	time.Sleep(10 * time.Second)
 	for {
-		transaction := Transaction{
-			Type:1,
-			Confirmed:1,
-		}
-
-		transactions, err := transaction.Find()
+		transactions, err := Client.ListTransactions("")
 		if err != nil {
 			log.Println(err)
 			continue
 		}
 
-		received_transactions, err := Client.ListTransactionsCountFrom("", 100, len(transactions))
-		if err != nil {
-			log.Println(err)
-			continue
-		}
+		for _,tx := range transactions {
 
-		for _,tx := range received_transactions {
+			if tx.Category == "send" {
+				continue
+			}
+
 			user, err := findUserByAddress(tx.Address)
 			if err != nil {
 				log.Println(err)
@@ -73,12 +68,12 @@ func ProcessTransactions() {
 				TransactionId:tx.TxID,
 			}
 
-			 err = new_tx.First()
+			err = new_tx.First()
 			if err != nil {
 				if err == gorm.ErrRecordNotFound {
 					log.Println("Found new transaction")
-					other_err := new_tx.Create()
-					if other_err != nil {
+					err2 := new_tx.Create()
+					if err2 != nil {
 						log.Println(err)
 						continue
 					}
@@ -88,18 +83,29 @@ func ProcessTransactions() {
 				}
 			}
 
-			if tx.Confirmations > 0 {
-				new_tx.Confirmed = 1
-				user.Balance = user.Balance + new_tx.Amount
-				err := user.Update()
-				if err != nil {
-					log.Println(err)
-					continue
-				}
-				err = new_tx.Update()
-				if err != nil {
-					log.Println(err)
-					continue
+			if new_tx.Confirmed == 0 {
+				if tx.Confirmations > 0 {
+					new_tx.Confirmed = 1
+					err = new_tx.Update()
+					if err != nil {
+						log.Println(err)
+						continue
+					}
+
+					if(BalanceMutexes[user.Username] == nil) {
+						BalanceMutexes[user.Username] = &sync.Mutex{}
+					}
+
+					BalanceMutexes[user.Username].Lock()
+
+					user.Balance = user.Balance + new_tx.Amount
+					err := user.Update()
+					if err != nil {
+						log.Println(err)
+						continue
+					}
+
+					BalanceMutexes[user.Username].Unlock()
 				}
 			}
 		}

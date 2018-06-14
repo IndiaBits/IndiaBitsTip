@@ -166,7 +166,7 @@ func (message *Message) WithdrawHandler(tmessage *telebot.Message) string {
 		Type: 2,
 		Amount: amount,
 		MessageId: message.Id,
-		Confirmed:0,
+		Confirmed:1,
 		Address:address.String(),
 	}
 	if err := transaction.Create(); err != nil {
@@ -235,7 +235,7 @@ func (message *Message) TipHandler(tmessage *telebot.Message) string {
 	}
 
 	data := strings.Split(tmessage.Text," ")
-	if len(data) != 2 {
+	if len(data) < 2 {
 		return "Incorrect format"
 	}
 
