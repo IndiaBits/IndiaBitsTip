@@ -95,7 +95,24 @@ func (message *Message) BalanceHandler(tmessage *telebot.Message) string {
 			return "Something went wrong."
 		}
 	}
-	return strconv.FormatFloat(user.Balance,'f', 8, 64) + " BTC"
+
+	transaction := Transaction{
+		Type:1,
+		Confirmed:2,
+		UserId:user.Id,
+	}
+
+	unconfirmed_balance := 0.00
+
+	transactions,err := transaction.Find()
+	for _, transaction = range transactions {
+		log.Println(transaction)
+		unconfirmed_balance += transaction.Amount
+	}
+
+	confirmed_balance_text := strconv.FormatFloat(user.Balance,'f', 8, 64)
+	unconfirmed_balance_text := "(" + strconv.FormatFloat(unconfirmed_balance, 'f', 8, 64) + ")"
+	return confirmed_balance_text + unconfirmed_balance_text + " BTC"
 }
 
 func (message *Message) WithdrawHandler(tmessage *telebot.Message) string {

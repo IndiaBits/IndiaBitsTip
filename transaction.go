@@ -72,6 +72,7 @@ func ProcessTransactions() {
 			if err != nil {
 				if err == gorm.ErrRecordNotFound {
 					log.Println("Found new transaction")
+					new_tx.Confirmed = 2
 					err2 := new_tx.Create()
 					if err2 != nil {
 						log.Println(err)
@@ -83,7 +84,7 @@ func ProcessTransactions() {
 				}
 			}
 
-			if new_tx.Confirmed == 0 {
+			if new_tx.Confirmed == 2 {
 				if tx.Confirmations > 0 {
 					new_tx.Confirmed = 1
 					err = new_tx.Update()
