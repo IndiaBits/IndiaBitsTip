@@ -136,19 +136,15 @@ func (message *Message) WithdrawHandler(tmessage *telebot.Message) string {
 		return "Please enter a valid bitcoin address"
 	}
 
-	amount, err := strconv.ParseFloat(data[1], 64)
-	if err != nil {
-		return "Please enter a valid amount"
-	}
+	var amount float64
 
-	withdrawal_fee, err := strconv.ParseFloat(os.Getenv("WITHDRAWAL_FEE"),  64)
-	if err != nil {
-		log.Println(err)
-		return "Something went wrong"
-	}
-
-	if user.Balance < (amount + withdrawal_fee) {
-		return "Insufficient balance"
+	if data[1] != "all" {
+		amount, err = strconv.ParseFloat(data[1], 64)
+		if err != nil {
+			return "Please enter a valid amount"
+		}
+	} else {
+		amount = user.Balance
 	}
 
 	minimum_withdrawal_amount, err := strconv.ParseFloat(os.Getenv("MINIMUM_AMOUNT_TO_WITHDRAW"), 64)
@@ -161,7 +157,17 @@ func (message *Message) WithdrawHandler(tmessage *telebot.Message) string {
 		return "Amount is less than the minimum amount required to withdraw " + os.Getenv("MINIMUM_AMOUNT_TO_WITHDRAW")
 	}
 
-	withdrawal_amount, err := btcutil.NewAmount(amount)
+	withdrawal_fee, err := strconv.ParseFloat(os.Getenv("WITHDRAWAL_FEE"),  64)
+	if err != nil {
+		log.Println(err)
+		return "Something went wrong"
+	}
+
+	if user.Balance < (amount - withdrawal_fee) {
+		return "Insufficient balance"
+	}
+
+	withdrawal_amount, err := btcutil.NewAmount((amount - withdrawal_fee))
 	if err != nil {
 		log.Println(err)
 		return "Please enter a valid amount"
@@ -256,9 +262,22 @@ func (message *Message) TipHandler(tmessage *telebot.Message) string {
 		return "Incorrect format"
 	}
 
-	amount, err := strconv.ParseFloat(data[1], 64)
-	if err != nil {
-		return "Please enter correct amount"
+	var amount float64
+
+	if data[1] != "all" {
+		amount, err = strconv.ParseFloat(data[1], 64)
+		if err != nil {
+			return "Please enter correct amount"
+		}
+
+		if amount <= 0 {
+			return "Please enter correct amount"
+		}
+	} else {
+		amount = user.Balance
+		if user.Balance <= 0 {
+			return "Insufficient balance"
+		}
 	}
 
 	if(BalanceMutexes[user.Username] == nil) {
@@ -310,7 +329,9 @@ func (message *Message) TipHandler(tmessage *telebot.Message) string {
 	BalanceMutexes[user.Username].Unlock()
 	BalanceMutexes[otheruser.Username].Unlock()
 
-	return "@" + user.Username + " tipped " + data[1] + " btc to " + "@" + otheruser.Username
+	amount_text := strconv.FormatFloat(amount, 'f',8,64)
+
+	return "@" + user.Username + " tipped " + amount_text + " btc to " + "@" + otheruser.Username
 }
 
 func findUser(username string) (*User, error) {
