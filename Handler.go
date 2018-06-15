@@ -356,3 +356,64 @@ func getAddress(addr string) (btcutil.Address, error) {
 	}
 	return address, nil
 }
+
+func withdrawalValidations(tmessage *telebot.Message) string {
+	user, err := findUser(tmessage.Sender.Username)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return "You must be registered to use the bot"
+		} else {
+			log.Println(err)
+			return "Something went wrong."
+		}
+	}
+
+	data := strings.Split(tmessage.Payload," ")
+	if len(data) < 2 {
+		return "Please provide both address and amount"
+	}
+
+	_ , err = getAddress(data[0])
+	if err != nil {
+		return "Please enter a valid bitcoin address"
+	}
+
+	var amount float64
+
+	if data[1] != "all" {
+		amount, err = strconv.ParseFloat(data[1], 64)
+		if err != nil {
+			return "Please enter a valid amount"
+		}
+	} else {
+		amount = user.Balance
+	}
+
+	minimum_withdrawal_amount, err := strconv.ParseFloat(os.Getenv("MINIMUM_AMOUNT_TO_WITHDRAW"), 64)
+	if err != nil {
+		log.Println(err)
+		return "Something went wrong"
+	}
+
+	if amount < minimum_withdrawal_amount {
+		return "Amount is less than the minimum amount required to withdraw " + os.Getenv("MINIMUM_AMOUNT_TO_WITHDRAW")
+	}
+
+	withdrawal_fee, err := strconv.ParseFloat(os.Getenv("WITHDRAWAL_FEE"),  64)
+	if err != nil {
+		log.Println(err)
+		return "Something went wrong"
+	}
+
+	if user.Balance < (amount - withdrawal_fee) {
+		return "Insufficient balance"
+	}
+
+	_ , err = btcutil.NewAmount((amount - withdrawal_fee))
+	if err != nil {
+		log.Println(err)
+		return "Please enter a valid amount"
+	}
+
+	return "ok"
+}

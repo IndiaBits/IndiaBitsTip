@@ -65,6 +65,12 @@ func InitTelegramCommands(bot *telebot.Bot) {
 	})
 
 	bot.Handle("/withdraw",func(tmessage *telebot.Message) {
+		validation_error := withdrawalValidations(tmessage)
+		if validation_error != "ok" {
+			bot.Send(tmessage.Sender, validation_error)
+			return
+		}
+
 		random_string := RandomString(32)
 		confirmBtn.Data = random_string
 		cancelBtn.Data = random_string
