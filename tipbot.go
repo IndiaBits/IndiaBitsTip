@@ -15,6 +15,7 @@ import (
 var DB *gorm.DB
 var Client *rpcclient.Client
 var BalanceMutexes = make(map[string]*sync.Mutex)
+var withdrawal_confirmations = make(map[string]*telebot.Message)
 
 func main() {
 	err := godotenv.Load()

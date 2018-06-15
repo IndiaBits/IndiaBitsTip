@@ -5,6 +5,7 @@ import (
 	"github.com/jinzhu/gorm"
 	"time"
 	"sync"
+	"gopkg.in/tucnak/telebot.v2"
 )
 
 type Transaction struct {
@@ -111,4 +112,38 @@ func ProcessTransactions() {
 			}
 		}
 	}
+}
+
+func ProcessWithdrawal(bot *telebot.Bot,tmessage *telebot.Message) {
+	message, err := NewMessage(tmessage)
+	if err != nil {
+		response := err.Error()
+		bot.Send(tmessage.Sender, response)
+	}
+
+	user, err := findUser(tmessage.Sender.Username)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			response := "You must be registered to use the bot"
+			bot.Send(tmessage.Sender, response)
+			UpdateResponse(response, *message)
+		} else {
+			log.Println(err)
+			response := "Something went wrong."
+			bot.Send(tmessage.Sender, response)
+			UpdateResponse(response, *message)
+		}
+	}
+
+	if(BalanceMutexes[user.Username] == nil) {
+		BalanceMutexes[user.Username] = &sync.Mutex{}
+	}
+
+	BalanceMutexes[user.Username].Lock()
+
+	response := message.WithdrawHandler(tmessage)
+
+	BalanceMutexes[user.Username].Unlock()
+	bot.Send(tmessage.Sender, response)
+	UpdateResponse(response, *message)
 }

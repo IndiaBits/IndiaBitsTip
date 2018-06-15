@@ -106,7 +106,6 @@ func (message *Message) BalanceHandler(tmessage *telebot.Message) string {
 
 	transactions,err := transaction.Find()
 	for _, transaction = range transactions {
-		log.Println(transaction)
 		unconfirmed_balance += transaction.Amount
 	}
 
