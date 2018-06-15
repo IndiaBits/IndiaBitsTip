@@ -80,7 +80,7 @@ func InitTelegramCommands(bot *telebot.Bot) {
 		}
 		withdrawal_confirmations[random_string] = tmessage
 
-		response := "Each withdrawal currently costs " + os.Getenv("WITHDRAWAL_FEE") + " btc. Are you sure you want to withdraw?"
+		response := "Current network fees : " + os.Getenv("WITHDRAWAL_FEE") + " btc"
 		_, err := bot.Send(tmessage.Sender, response, &telebot.ReplyMarkup{
 			InlineKeyboard: confirmKeys,
 		})

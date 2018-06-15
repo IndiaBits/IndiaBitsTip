@@ -111,6 +111,9 @@ func (message *Message) BalanceHandler(tmessage *telebot.Message) string {
 
 	confirmed_balance_text := strconv.FormatFloat(user.Balance,'f', 8, 64)
 	unconfirmed_balance_text := "(" + strconv.FormatFloat(unconfirmed_balance, 'f', 8, 64) + ")"
+	if len(transactions) == 0 {
+		unconfirmed_balance_text = ""
+	}
 	return confirmed_balance_text + unconfirmed_balance_text + " BTC"
 }
 
@@ -223,7 +226,7 @@ func (message *Message) WithdrawHandler(tmessage *telebot.Message) string {
 		log.Println(err)
 	}
 
-	return tx.String()
+	return "Sent with tx id: " + tx.String()
 }
 
 func (message *Message) TipHandler(tmessage *telebot.Message) string {
@@ -258,7 +261,7 @@ func (message *Message) TipHandler(tmessage *telebot.Message) string {
 
 	data := strings.Split(tmessage.Text," ")
 	if len(data) < 2 {
-		return "Incorrect format"
+		return "Correct format : tip amount"
 	}
 
 	var amount float64
