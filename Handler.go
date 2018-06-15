@@ -30,7 +30,7 @@ func (message *Message) HelpHandler() string {
 	help_text = "Welcome to the Indiabits tipbot. Start by sending /register to register an account and start using the bot."
 	help_text += "\n\nCommands:"
 	help_text += "\n\n\\register: Register an account. Make sure you have a telegram username. Your funds are associated with your telegram username so withdraw all your funds if you decide to change your telegram username"
-	help_text += "\n\n\\address <amount>: Get your bitcoin deposit address"
+	help_text += "\n\n\\address: Get your bitcoin deposit address"
 	help_text += "\n\n\\withdraw <address> <amount>: Withdraw coins to a bitcoin address. Withdrawal fee: " + os.Getenv("WITHDRAWAL_FEE") + " BTC"
 	help_text += "\n\n\\balance: Check your balance"
 	help_text += "\n\n\\tip <amount>: Reply to any message with tip <amount> and the sender of the message will be tipped with the specified amount"
