@@ -21,6 +21,11 @@ func InitTelegramCommands(bot *telebot.Bot) {
 	}
 
 	bot.Handle("/help",func(tmessage *telebot.Message) {
+
+		if tmessage.Chat.Type == "group" {
+			bot.Delete(tmessage)
+		}
+
 		message, err := NewMessage(tmessage)
 		if err != nil {
 			response := err.Error()
@@ -38,11 +43,16 @@ func InitTelegramCommands(bot *telebot.Bot) {
 			bot.Send(tmessage.Sender, response)
 		}
 		response := message.RegisterHandler(tmessage)
-		bot.Send(tmessage.Sender, response)
+		bot.Send(tmessage.Chat, response)
 		UpdateResponse(response, *message)
 	})
 
 	bot.Handle("/address",func(tmessage *telebot.Message) {
+
+		if tmessage.Chat.Type == "group" {
+			bot.Delete(tmessage)
+		}
+
 		message, err := NewMessage(tmessage)
 		if err != nil {
 			response := err.Error()
@@ -54,6 +64,11 @@ func InitTelegramCommands(bot *telebot.Bot) {
 	})
 
 	bot.Handle("/balance",func(tmessage *telebot.Message) {
+
+		if tmessage.Chat.Type == "group" {
+			bot.Delete(tmessage)
+		}
+
 		message, err := NewMessage(tmessage)
 		if err != nil {
 			response := err.Error()
@@ -65,6 +80,11 @@ func InitTelegramCommands(bot *telebot.Bot) {
 	})
 
 	bot.Handle("/withdraw",func(tmessage *telebot.Message) {
+
+		if tmessage.Chat.Type == "group" {
+			bot.Delete(tmessage)
+		}
+
 		validation_error := withdrawalValidations(tmessage)
 		if validation_error != "ok" {
 			bot.Send(tmessage.Sender, validation_error)
@@ -87,6 +107,17 @@ func InitTelegramCommands(bot *telebot.Bot) {
 		if err != nil {
 			log.Print(err)
 		}
+	})
+
+	bot.Handle("/tip", func(tmessage *telebot.Message) {
+		message, err := NewMessage(tmessage)
+		if err != nil {
+			response := err.Error()
+			bot.Send(tmessage.Sender, response)
+		}
+		response := message.TipHandler(tmessage)
+		bot.Send(tmessage.Chat, response)
+		UpdateResponse(response, *message)
 	})
 
 	bot.Handle(telebot.OnText, func(tmessage *telebot.Message) {
