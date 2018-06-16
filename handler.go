@@ -116,6 +116,9 @@ func (message *Message) BalanceHandler(tmessage *telebot.Message) string {
 
 	confirmed_balance_text := emoji.Emoji("ballot_box_with_check") + " Balance: " + strconv.FormatFloat(user.Balance,'f', 8, 64) + " BTC\n"
 	unconfirmed_balance_text := emoji.Emoji("information_source") + " Pending: " + strconv.FormatFloat(unconfirmed_balance, 'f', 8, 64) + " BTC"
+	if len(transactions) < 1 {
+		unconfirmed_balance_text = ""
+	}
 	return confirmed_balance_text + unconfirmed_balance_text
 }
 
@@ -275,12 +278,12 @@ func (message *Message) TipHandler(tmessage *telebot.Message) string {
 		}
 
 		if amount <= 0 {
-			return emoji.Emoji("information_source") + " Cannot tip 0 or negative amount"
+			return emoji.Emoji("no_entry_sign") + " Cannot tip 0 or negative amount"
 		}
 	} else {
 		amount = user.Balance
 		if user.Balance <= 0 {
-			return emoji.Emoji("no_entry_sign") + " Insufficient balance!"
+			return emoji.Emoji("no_entry_sign") + " No balance! Please deposit to tip!"
 		}
 	}
 
@@ -335,7 +338,7 @@ func (message *Message) TipHandler(tmessage *telebot.Message) string {
 
 	amount_text := strconv.FormatFloat(amount, 'f',8,64)
 
-	return "@" + user.Username + " tipped " + amount_text + " btc to " + "@" + otheruser.Username
+	return emoji.Emoji("ballot_box_with_check") + " @" + user.Username + " tipped " + amount_text + " btc to " + "@" + otheruser.Username
 }
 
 func findUser(username string) (*User, error) {
