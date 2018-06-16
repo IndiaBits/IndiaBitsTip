@@ -10,6 +10,7 @@ import (
 	"github.com/btcsuite/btcd/chaincfg"
 	"os"
 	"sync"
+	"github.com/funyug/bitcoin-tipbot/emoji"
 )
 
 type Tip struct {
@@ -27,38 +28,42 @@ func (tip *Tip) Create() error {
 
 func (message *Message) HelpHandler() string {
 	help_text := ""
-	help_text = "Welcome to the Indiabits tipbot. Start by sending /register to register an account and start using the bot."
+	help_text = emoji.Emoji("white_check_mark") + " Welcome to the Indiabits tipbot. Start by sending /register to create an account and start using the bot."
 	help_text += "\n\nCommands:"
-	help_text += "\n\n\\register: Register an account. Make sure you have a telegram username. Your funds are associated with your telegram username so withdraw all your funds if you decide to change your telegram username"
-	help_text += "\n\n\\address: Get your bitcoin deposit address"
-	help_text += "\n\n\\withdraw <address> <amount>: Withdraw coins to a bitcoin address. Withdrawal fee: " + os.Getenv("WITHDRAWAL_FEE") + " BTC"
-	help_text += "\n\n\\balance: Check your balance"
-	help_text += "\n\n\\tip <amount>: Reply to any message with tip <amount> and the sender of the message will be tipped with the specified amount"
+	help_text += "\n" + emoji.Emoji("heavy_minus_sign") + " /register: Register an account. Make sure you have a telegram username. Your funds are associated with your telegram username so withdraw all your funds if you decide to change your telegram username"
+	help_text += "\n" + emoji.Emoji("heavy_minus_sign") + " /address: Get your bitcoin deposit address"
+	help_text += "\n" + emoji.Emoji("heavy_minus_sign") + " /withdraw <address> <amount>: Withdraw coins to a bitcoin address. Withdrawal fee: " + os.Getenv("WITHDRAWAL_FEE") + " BTC. Minimum amount: " + os.Getenv("MINIMUM_AMOUNT_TO_WITHDRAW")
+	help_text += "\n" + emoji.Emoji("heavy_minus_sign") + " /balance: Check your balance"
+	help_text += "\n" + emoji.Emoji("heavy_minus_sign") + " /tip <amount>: Reply to any message with tip <amount> and the sender of the message will be tipped with the specified amount"
+	help_text += "\n" + emoji.Emoji("heavy_minus_sign") + " /help for this help menu"
+	help_text += "\n\n" + emoji.Emoji("information_source") + " Tips are offchain hence no fees for tipping users and database is maintained by one of the IndiaBits Admin."
+	help_text += "\n" + emoji.Emoji("heavy_minus_sign") + " Supports tip amount upto 8 decimal amount/points"
+	help_text += "\n" + emoji.Emoji("warning") + " Its not recommended to use tipbot as a wallet or to exchange large amounts."
 	return help_text
 }
 
 func (message *Message) RegisterHandler(tmessage *telebot.Message) string {
 	if tmessage.Sender.Username == "" {
-		return "You need to have a username to use this bot."
+		return emoji.Emoji("information_source") + " You need to have a username to use this bot."
 	}
 
 	user, err := findUser(tmessage.Sender.Username)
 	if err != nil && err != gorm.ErrRecordNotFound {
 		log.Println(err)
-		response := "Something went wrong."
+		response := emoji.Emoji("no_entry_sign") + " Something went wrong."
 		return response
 	}
 
 	if user.Id != 0 {
-		return "You are already registered"
+		return emoji.Emoji("information_source") + " @" + user.Username + " is already registered!"
 	}
 
 	err = user.Register()
 	if err != nil {
 		log.Println(err.Error())
-		return "Something went wrong."
+		return emoji.Emoji("no_entry_sign") + " Something went wrong."
 	} else {
-		return "Successfully registered"
+		return emoji.Emoji("ballot_box_with_check") + " Successfully registered"
 	}
 }
 
@@ -66,10 +71,10 @@ func (message *Message) GetAddressHandler(tmessage *telebot.Message) string {
 	user, err := findUser(tmessage.Sender.Username)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return "You must be registered to use the bot"
+			return emoji.Emoji("information_source") + " You must be registered to use the bot"
 		} else {
 			log.Println(err)
-			return "Something went wrong."
+			return emoji.Emoji("no_entry_sign") + " Something went wrong."
 		}
 	}
 
@@ -78,21 +83,21 @@ func (message *Message) GetAddressHandler(tmessage *telebot.Message) string {
 		user.Update()
 		if err != nil {
 			log.Println(err)
-			return "Something went wrong."
+			return emoji.Emoji("no_entry_sign") + " Something went wrong."
 		}
 	}
 
-	return "Your address is " + user.Address
+	return emoji.Emoji("information_source") + " Your address is " + user.Address
 }
 
 func (message *Message) BalanceHandler(tmessage *telebot.Message) string {
 	user, err := findUser(tmessage.Sender.Username)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return "You must be registered to use the bot"
+			return emoji.Emoji("information_source")+" You must be registered to use the bot"
 		} else {
 			log.Println(err)
-			return "Something went wrong."
+			return emoji.Emoji("no_entry_sign") + " Something went wrong."
 		}
 	}
 
@@ -109,33 +114,30 @@ func (message *Message) BalanceHandler(tmessage *telebot.Message) string {
 		unconfirmed_balance += transaction.Amount
 	}
 
-	confirmed_balance_text := strconv.FormatFloat(user.Balance,'f', 8, 64)
-	unconfirmed_balance_text := "(" + strconv.FormatFloat(unconfirmed_balance, 'f', 8, 64) + ")"
-	if len(transactions) == 0 {
-		unconfirmed_balance_text = ""
-	}
-	return confirmed_balance_text + unconfirmed_balance_text + " BTC"
+	confirmed_balance_text := emoji.Emoji("ballot_box_with_check") + " Balance: " + strconv.FormatFloat(user.Balance,'f', 8, 64) + " BTC\n"
+	unconfirmed_balance_text := emoji.Emoji("information_source") + " Pending: " + strconv.FormatFloat(unconfirmed_balance, 'f', 8, 64) + " BTC"
+	return confirmed_balance_text + unconfirmed_balance_text
 }
 
 func (message *Message) WithdrawHandler(tmessage *telebot.Message) string {
 	user, err := findUser(tmessage.Sender.Username)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return "You must be registered to use the bot"
+			return emoji.Emoji("information_source") + " You must be registered to use the bot"
 		} else {
 			log.Println(err)
-			return "Something went wrong."
+			return emoji.Emoji("no_entry_sign") + " Something went wrong."
 		}
 	}
 
 	data := strings.Split(tmessage.Payload," ")
 	if len(data) < 2 {
-		return "Please provide both address and amount"
+		return emoji.Emoji("information_source") + " Correct format: /withdraw address amount"
 	}
 
 	address, err := getAddress(data[0])
 	if err != nil {
-		return "Please enter a valid bitcoin address"
+		return emoji.Emoji("information_source") + " Please enter a valid bitcoin address"
 	}
 
 	var amount float64
@@ -143,7 +145,7 @@ func (message *Message) WithdrawHandler(tmessage *telebot.Message) string {
 	if data[1] != "all" {
 		amount, err = strconv.ParseFloat(data[1], 64)
 		if err != nil {
-			return "Please enter a valid amount"
+			return emoji.Emoji("information_source") + " Please enter a valid amount"
 		}
 	} else {
 		amount = user.Balance
@@ -152,27 +154,27 @@ func (message *Message) WithdrawHandler(tmessage *telebot.Message) string {
 	minimum_withdrawal_amount, err := strconv.ParseFloat(os.Getenv("MINIMUM_AMOUNT_TO_WITHDRAW"), 64)
 	if err != nil {
 		log.Println(err)
-		return "Something went wrong"
+		return emoji.Emoji("no_entry_sign") + " Something went wrong"
 	}
 
 	if amount < minimum_withdrawal_amount {
-		return "Amount is less than the minimum amount required to withdraw " + os.Getenv("MINIMUM_AMOUNT_TO_WITHDRAW")
+		return emoji.Emoji("information_source") + " Amount is less than the minimum amount required to withdraw " + os.Getenv("MINIMUM_AMOUNT_TO_WITHDRAW")
 	}
 
 	withdrawal_fee, err := strconv.ParseFloat(os.Getenv("WITHDRAWAL_FEE"),  64)
 	if err != nil {
 		log.Println(err)
-		return "Something went wrong"
+		return emoji.Emoji("no_entry_sign") + " Something went wrong"
 	}
 
-	if user.Balance < (amount - withdrawal_fee) {
-		return "Insufficient balance"
+	if user.Balance < amount  {
+		return emoji.Emoji("no_entry_sign") + " Insufficient balance"
 	}
 
 	withdrawal_amount, err := btcutil.NewAmount((amount - withdrawal_fee))
 	if err != nil {
 		log.Println(err)
-		return "Please enter a valid amount"
+		return emoji.Emoji("information_source") + " Please enter a valid amount"
 	}
 
 	/*fees, err := strconv.ParseFloat(data[2], 64)
@@ -189,21 +191,21 @@ func (message *Message) WithdrawHandler(tmessage *telebot.Message) string {
 	transaction := Transaction{
 		UserId: user.Id,
 		Type: 2,
-		Amount: amount - withdrawal_fee,
+		Amount: amount,
 		MessageId: message.Id,
 		Confirmed:1,
 		Address:address.String(),
 	}
 	if err := transaction.Create(); err != nil {
 		log.Println(err)
-		return "Something went wrong"
+		return emoji.Emoji("no_entry_sign") + " Something went wrong"
 	}
 
 	user.Balance = user.Balance - amount
 	err = user.Update()
 	if err != nil {
 		log.Println(err)
-		return "Something went wrong"
+		return emoji.Emoji("no_entry_sign") + " Something went wrong"
 	}
 
 	/*err = Client.SetTxFee(fee_amount)
@@ -217,7 +219,7 @@ func (message *Message) WithdrawHandler(tmessage *telebot.Message) string {
 		user.Balance = user.Balance + amount
 		user.Update()
 		log.Println(err)
-		return "Something went wrong"
+		return emoji.Emoji("no_entry_sign") + " Something went wrong"
 	}
 
 	transaction.TransactionId = tx.String()
@@ -226,7 +228,7 @@ func (message *Message) WithdrawHandler(tmessage *telebot.Message) string {
 		log.Println(err)
 	}
 
-	return "Sent with tx id: " + tx.String()
+	return emoji.Emoji("ballot_box_with_check") + " Sent with tx id: " + tx.String()
 }
 
 func (message *Message) TipHandler(tmessage *telebot.Message) string {
@@ -234,34 +236,34 @@ func (message *Message) TipHandler(tmessage *telebot.Message) string {
 	user, err := findUser(tmessage.Sender.Username)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return "You must be registered to use the bot"
+			return emoji.Emoji("information_source") + " You must be registered to use the bot"
 		} else {
 			log.Println(err)
-			return "Something went wrong."
+			return emoji.Emoji("no_entry_sign") + " Something went wrong."
 		}
 	}
 
 	if tmessage.ReplyTo == nil {
-		return "You need to reply to the message you want to tip for"
+		return emoji.Emoji("information_source") + " You need to reply to the message you want to tip for"
 	}
 
 	otheruser, err := findUser(tmessage.ReplyTo.Sender.Username)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return "The user must be registered to receive tips"
+			return emoji.Emoji("information_source") + " The user must be registered to receive tips"
 		} else {
 			log.Println(err)
-			return "Something went wrong."
+			return emoji.Emoji("no_entry_sign") + " Something went wrong."
 		}
 	}
 
 	if user.Username == otheruser.Username {
-		return "You cannot tip yourself"
+		return emoji.Emoji("information_source") + " You cannot tip yourself"
 	}
 
 	data := strings.Split(tmessage.Text," ")
 	if len(data) < 2 {
-		return "Correct format : tip amount"
+		return emoji.Emoji("information_source") + " Correct format : tip amount"
 	}
 
 	var amount float64
@@ -269,16 +271,16 @@ func (message *Message) TipHandler(tmessage *telebot.Message) string {
 	if data[1] != "all" {
 		amount, err = strconv.ParseFloat(data[1], 64)
 		if err != nil {
-			return "Please enter correct amount"
+			return emoji.Emoji("information_source") + " Please enter correct amount"
 		}
 
 		if amount <= 0 {
-			return "Cannot tip 0 or negative amount"
+			return emoji.Emoji("information_source") + " Cannot tip 0 or negative amount"
 		}
 	} else {
 		amount = user.Balance
 		if user.Balance <= 0 {
-			return "Insufficient balance"
+			return emoji.Emoji("no_entry_sign") + " Insufficient balance"
 		}
 	}
 
@@ -296,7 +298,7 @@ func (message *Message) TipHandler(tmessage *telebot.Message) string {
 	if user.Balance < amount {
 		BalanceMutexes[user.Username].Unlock()
 		BalanceMutexes[otheruser.Username].Unlock()
-		return "Insufficient balance"
+		return emoji.Emoji("information_source") + " Insufficient balance"
 	}
 
 	user.Balance = user.Balance - amount
@@ -325,7 +327,7 @@ func (message *Message) TipHandler(tmessage *telebot.Message) string {
 		BalanceMutexes[user.Username].Unlock()
 		BalanceMutexes[otheruser.Username].Unlock()
 
-		return "Something went wrong"
+		return emoji.Emoji("information_source") + " Something went wrong"
 	}
 
 	BalanceMutexes[user.Username].Unlock()
@@ -364,21 +366,21 @@ func withdrawalValidations(tmessage *telebot.Message) string {
 	user, err := findUser(tmessage.Sender.Username)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return "You must be registered to use the bot"
+			return emoji.Emoji("information_source") + " You must be registered to use the bot"
 		} else {
 			log.Println(err)
-			return "Something went wrong."
+			return emoji.Emoji("no_entry_sign") + " Something went wrong."
 		}
 	}
 
 	data := strings.Split(tmessage.Payload," ")
 	if len(data) < 2 {
-		return "Please provide both address and amount"
+		return emoji.Emoji("information_source") + " Correct format: /withdraw address amount"
 	}
 
 	_ , err = getAddress(data[0])
 	if err != nil {
-		return "Please enter a valid bitcoin address"
+		return emoji.Emoji("information_source") + " Please enter a valid bitcoin address"
 	}
 
 	var amount float64
@@ -386,7 +388,7 @@ func withdrawalValidations(tmessage *telebot.Message) string {
 	if data[1] != "all" {
 		amount, err = strconv.ParseFloat(data[1], 64)
 		if err != nil {
-			return "Please enter a valid amount"
+			return emoji.Emoji("information_source") + " Please enter a valid amount"
 		}
 	} else {
 		amount = user.Balance
@@ -395,27 +397,27 @@ func withdrawalValidations(tmessage *telebot.Message) string {
 	minimum_withdrawal_amount, err := strconv.ParseFloat(os.Getenv("MINIMUM_AMOUNT_TO_WITHDRAW"), 64)
 	if err != nil {
 		log.Println(err)
-		return "Something went wrong"
+		return emoji.Emoji("no_entry_sign") + " Something went wrong"
 	}
 
 	if amount < minimum_withdrawal_amount {
-		return "Amount is less than the minimum amount required to withdraw " + os.Getenv("MINIMUM_AMOUNT_TO_WITHDRAW")
+		return emoji.Emoji("information_source") + " Amount is less than the minimum amount required to withdraw " + os.Getenv("MINIMUM_AMOUNT_TO_WITHDRAW")
 	}
 
 	withdrawal_fee, err := strconv.ParseFloat(os.Getenv("WITHDRAWAL_FEE"),  64)
 	if err != nil {
 		log.Println(err)
-		return "Something went wrong"
+		return emoji.Emoji("no_entry_sign") + " Something went wrong"
 	}
 
-	if user.Balance < (amount - withdrawal_fee) {
-		return "Insufficient balance"
+	if user.Balance < amount {
+		return emoji.Emoji("no_entry_sign") + " Insufficient balance"
 	}
 
 	_ , err = btcutil.NewAmount((amount - withdrawal_fee))
 	if err != nil {
 		log.Println(err)
-		return "Please enter a valid amount"
+		return emoji.Emoji("information_source") + " Please enter a valid amount"
 	}
 
 	return "ok"
