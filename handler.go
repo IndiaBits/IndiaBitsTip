@@ -168,7 +168,7 @@ func (message *Message) WithdrawHandler(tmessage *telebot.Message) string {
 	}
 
 	if user.Balance < amount  {
-		return emoji.Emoji("no_entry_sign") + " Insufficient balance"
+		return emoji.Emoji("no_entry_sign") + " Insufficient balance!"
 	}
 
 	withdrawal_amount, err := btcutil.NewAmount((amount - withdrawal_fee))
@@ -263,7 +263,7 @@ func (message *Message) TipHandler(tmessage *telebot.Message) string {
 
 	data := strings.Split(tmessage.Text," ")
 	if len(data) < 2 {
-		return emoji.Emoji("information_source") + " Correct format : tip amount"
+		return emoji.Emoji("information_source") + " Correct format : tip amount reason(optional)"
 	}
 
 	var amount float64
@@ -271,7 +271,7 @@ func (message *Message) TipHandler(tmessage *telebot.Message) string {
 	if data[1] != "all" {
 		amount, err = strconv.ParseFloat(data[1], 64)
 		if err != nil {
-			return emoji.Emoji("information_source") + " Please enter correct amount"
+			return emoji.Emoji("information_source") + " Correct format : tip amount reason(optional)"
 		}
 
 		if amount <= 0 {
@@ -280,7 +280,7 @@ func (message *Message) TipHandler(tmessage *telebot.Message) string {
 	} else {
 		amount = user.Balance
 		if user.Balance <= 0 {
-			return emoji.Emoji("no_entry_sign") + " Insufficient balance"
+			return emoji.Emoji("no_entry_sign") + " Insufficient balance!"
 		}
 	}
 
@@ -298,7 +298,7 @@ func (message *Message) TipHandler(tmessage *telebot.Message) string {
 	if user.Balance < amount {
 		BalanceMutexes[user.Username].Unlock()
 		BalanceMutexes[otheruser.Username].Unlock()
-		return emoji.Emoji("information_source") + " Insufficient balance"
+		return emoji.Emoji("no_entry_sign") + " Insufficient balance!"
 	}
 
 	user.Balance = user.Balance - amount
@@ -411,7 +411,7 @@ func withdrawalValidations(tmessage *telebot.Message) string {
 	}
 
 	if user.Balance < amount {
-		return emoji.Emoji("no_entry_sign") + " Insufficient balance"
+		return emoji.Emoji("no_entry_sign") + " Insufficient balance!"
 	}
 
 	_ , err = btcutil.NewAmount((amount - withdrawal_fee))
