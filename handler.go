@@ -18,6 +18,7 @@ type Tip struct {
 	FromId int
 	ToId int
 	MessageId int
+	TelegramMessageId int
 	Amount float64
 }
 
@@ -315,6 +316,7 @@ func (message *Message) TipHandler(tmessage *telebot.Message) string {
 		ToId: otheruser.Id,
 		Amount:amount,
 		MessageId: message.Id,
+		TelegramMessageId:tmessage.ReplyTo.ID,
 	}
 
 	err = tip.Create()
