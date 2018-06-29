@@ -6,6 +6,8 @@ import (
 	"time"
 	"sync"
 	"gopkg.in/tucnak/telebot.v2"
+	"os"
+	"strconv"
 )
 
 type Transaction struct {
@@ -41,6 +43,10 @@ func (transaction *Transaction) First() (error) {
 }
 
 func ProcessTransactions() {
+	confirmations, err := strconv.ParseInt(os.Getenv("DEPOSIT_CONFIRMATIONS"), 10, 64)
+	if err != nil {
+		log.Fatal(err)
+	}
 	time.Sleep(10 * time.Second)
 	for {
 		transactions, err := Client.ListTransactions("")
@@ -86,7 +92,7 @@ func ProcessTransactions() {
 			}
 
 			if new_tx.Confirmed == 2 {
-				if tx.Confirmations > 0 {
+				if tx.Confirmations > confirmations {
 					new_tx.Confirmed = 1
 					err = new_tx.Update()
 					if err != nil {
