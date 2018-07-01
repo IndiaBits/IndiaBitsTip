@@ -47,7 +47,7 @@ func ProcessTransactions() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	time.Sleep(10 * time.Second)
+	time.Sleep(120 * time.Second)
 	for {
 		transactions, err := Client.ListTransactions("")
 		if err != nil {
