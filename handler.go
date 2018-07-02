@@ -115,7 +115,7 @@ func (message *Message) BalanceHandler(tmessage *telebot.Message) string {
 		unconfirmed_balance += transaction.Amount
 	}
 
-	confirmed_balance_text := emoji.Emoji("ballot_box_with_check") + " Balance: " + strconv.FormatFloat(user.Balance,'f', 8, 64) + " BTC\n"
+	confirmed_balance_text := emoji.Emoji("white_check_mark") + " Balance: " + strconv.FormatFloat(user.Balance,'f', 8, 64) + " BTC\n"
 	unconfirmed_balance_text := emoji.Emoji("information_source") + " Pending: " + strconv.FormatFloat(unconfirmed_balance, 'f', 8, 64) + " BTC"
 	if len(transactions) < 1 {
 		unconfirmed_balance_text = ""
@@ -232,7 +232,8 @@ func (message *Message) WithdrawHandler(tmessage *telebot.Message) string {
 		log.Println(err)
 	}
 
-	return emoji.Emoji("ballot_box_with_check") + " Sent with tx id: " + tx.String()
+	amount_sent := strconv.FormatFloat((amount-withdrawal_fee), 'g', 8, 64 )
+	return emoji.Emoji("ballot_box_with_check") + " Sent " + amount_sent + " BTC with tx id: <a href=\"https://www.blockchain.com/en/btc/tx/"+ tx.String() + "\">"+tx.String()+"</a>"
 }
 
 func (message *Message) TipHandler(tmessage *telebot.Message) string {

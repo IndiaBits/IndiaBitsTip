@@ -70,7 +70,7 @@ func storeMessage(tmessage *telebot.Message) (*Message, error) {
 
 
 func UpdateResponse(response string, message Message) {
-	message.Response = response
+	message.Response = message.Response + "\n" + response
 	message.RepliedAt = time.Now()
 	message.update()
 }

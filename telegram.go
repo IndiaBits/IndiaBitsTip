@@ -45,6 +45,12 @@ func InitTelegramCommands(bot *telebot.Bot) {
 		response := message.RegisterHandler(tmessage)
 		bot.Send(tmessage.Chat, response)
 		UpdateResponse(response, *message)
+
+		if strings.Contains(response, "Successfully registered") {
+			response := message.HelpHandler()
+			bot.Send(tmessage.Sender, response)
+			UpdateResponse(response, *message)
+		}
 	})
 
 	bot.Handle("/address",func(tmessage *telebot.Message) {

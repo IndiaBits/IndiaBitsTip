@@ -150,6 +150,8 @@ func ProcessWithdrawal(bot *telebot.Bot,tmessage *telebot.Message) {
 	response := message.WithdrawHandler(tmessage)
 
 	BalanceMutexes[user.Username].Unlock()
-	bot.Send(tmessage.Sender, response)
+	bot.Send(tmessage.Sender, response, &telebot.SendOptions{
+		ParseMode:"HTML",
+	})
 	UpdateResponse(response, *message)
 }
