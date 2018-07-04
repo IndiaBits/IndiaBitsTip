@@ -11,6 +11,7 @@ import (
 	"os"
 	"sync"
 	"github.com/funyug/bitcoin-tipbot/emoji"
+	"errors"
 )
 
 type Tip struct {
@@ -41,7 +42,8 @@ func (message *Message) HelpHandler() string {
 	help_text += "\n" + emoji.Emoji("information_source") + " Tips are offchain hence no fees for tipping users and database is maintained by one of the IndiaBits Admin."
 	help_text += "\n" + emoji.Emoji("heavy_minus_sign") + " Supports tip amount upto 8 decimal amount/points"
 	help_text += "\n" + emoji.Emoji("warning") + " Its not recommended to use tipbot as a wallet or to exchange large amounts."
-	help_text += "\n" + emoji.Emoji("busts_in_silhouette") + "Created by @IndiaBits community Member @Funyug and @elpoep"
+	help_text += "\n" + emoji.Emoji("busts_in_silhouette") + " Created by @IndiaBits community Member @Funyug and @elpoep"
+	help_text += "\n" + emoji.Emoji("heart") + " Help with project with Donation: 325HAkcqboAvE39ZrHhigLFQyAQgeL8Jum"
 	return help_text
 }
 
@@ -71,6 +73,10 @@ func (message *Message) RegisterHandler(tmessage *telebot.Message) string {
 }
 
 func (message *Message) GetAddressHandler(tmessage *telebot.Message) string {
+	if tmessage.Sender.Username == "" {
+		return emoji.Emoji("information_source") + " You need to have a username to use this bot."
+	}
+
 	user, err := findUser(tmessage.Sender.Username)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -94,6 +100,10 @@ func (message *Message) GetAddressHandler(tmessage *telebot.Message) string {
 }
 
 func (message *Message) BalanceHandler(tmessage *telebot.Message) string {
+	if tmessage.Sender.Username == "" {
+		return emoji.Emoji("information_source") + " You need to have a username to use this bot."
+	}
+
 	user, err := findUser(tmessage.Sender.Username)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -126,6 +136,10 @@ func (message *Message) BalanceHandler(tmessage *telebot.Message) string {
 }
 
 func (message *Message) WithdrawHandler(tmessage *telebot.Message) string {
+	if tmessage.Sender.Username == "" {
+		return emoji.Emoji("information_source") + " You need to have a username to use this bot."
+	}
+
 	user, err := findUser(tmessage.Sender.Username)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -239,6 +253,9 @@ func (message *Message) WithdrawHandler(tmessage *telebot.Message) string {
 }
 
 func (message *Message) TipHandler(tmessage *telebot.Message) string {
+	if tmessage.Sender.Username == "" {
+		return emoji.Emoji("information_source") + " You need to have a username to use this bot."
+	}
 
 	user, err := findUser(tmessage.Sender.Username)
 	if err != nil {
@@ -252,6 +269,10 @@ func (message *Message) TipHandler(tmessage *telebot.Message) string {
 
 	if tmessage.ReplyTo == nil {
 		return emoji.Emoji("information_source") + " You need to reply to the message you want to tip for"
+	}
+
+	if tmessage.ReplyTo.Sender.Username == "" {
+		return emoji.Emoji("information_source") + " The user must be registered to receive tips."
 	}
 
 	otheruser, err := findUser(tmessage.ReplyTo.Sender.Username)
@@ -289,6 +310,10 @@ func (message *Message) TipHandler(tmessage *telebot.Message) string {
 		if user.Balance <= 0 {
 			return emoji.Emoji("no_entry_sign") + " No balance! Please deposit to tip!"
 		}
+	}
+
+	if amount < 0.00000001 {
+		return emoji.Emoji("information_source") + " Amount must be greater than 1 satoshi"
 	}
 
 	if(BalanceMutexes[user.Username] == nil) {
@@ -347,6 +372,10 @@ func (message *Message) TipHandler(tmessage *telebot.Message) string {
 }
 
 func findUser(username string) (*User, error) {
+	if username == "" {
+		err := errors.New("You need a username to use this bot")
+		return nil, err
+	}
 	user := &User{
 		Username: username,
 	}
@@ -371,6 +400,10 @@ func getAddress(addr string) (btcutil.Address, error) {
 }
 
 func withdrawalValidations(tmessage *telebot.Message) string {
+	if tmessage.Sender.Username == "" {
+		return emoji.Emoji("information_source") + " You need to have a username to use this bot."
+	}
+
 	user, err := findUser(tmessage.Sender.Username)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {

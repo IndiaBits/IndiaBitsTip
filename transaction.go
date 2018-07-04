@@ -8,6 +8,7 @@ import (
 	"gopkg.in/tucnak/telebot.v2"
 	"os"
 	"strconv"
+	"github.com/funyug/bitcoin-tipbot/emoji"
 )
 
 type Transaction struct {
@@ -125,6 +126,10 @@ func ProcessWithdrawal(bot *telebot.Bot,tmessage *telebot.Message) {
 	if err != nil {
 		response := err.Error()
 		bot.Send(tmessage.Sender, response)
+	}
+
+	if tmessage.Sender.Username == "" {
+		bot.Send(tmessage.Sender, emoji.Emoji("information_source") + " You need to have a username to use this bot.")
 	}
 
 	user, err := findUser(tmessage.Sender.Username)
