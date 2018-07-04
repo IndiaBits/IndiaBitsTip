@@ -32,7 +32,12 @@ func InitTelegramCommands(bot *telebot.Bot) {
 			bot.Send(tmessage.Sender, response)
 		}
 		response := message.HelpHandler()
-		bot.Send(tmessage.Sender, response)
+		_, err = bot.Send(tmessage.Sender, response, &telebot.SendOptions{
+			ParseMode:"Markdown",
+		})
+		if err != nil {
+			log.Println(err)
+		}
 		UpdateResponse(response, *message)
 	})
 

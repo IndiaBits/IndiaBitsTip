@@ -37,9 +37,11 @@ func (message *Message) HelpHandler() string {
 	help_text += "\n" + emoji.Emoji("heavy_minus_sign") + " /balance: Check your balance"
 	help_text += "\n" + emoji.Emoji("heavy_minus_sign") + " /tip <amount>: Reply to any message with tip <amount> and the sender of the message will be tipped with the specified amount"
 	help_text += "\n" + emoji.Emoji("heavy_minus_sign") + " /help for this help menu"
-	help_text += "\n\n" + emoji.Emoji("information_source") + " Tips are offchain hence no fees for tipping users and database is maintained by one of the IndiaBits Admin."
+	help_text += "\n\n" + emoji.Emoji("bar_chart") + " [Click here](http://tips.indiabits.in) for DashBoard and Stats"
+	help_text += "\n" + emoji.Emoji("information_source") + " Tips are offchain hence no fees for tipping users and database is maintained by one of the IndiaBits Admin."
 	help_text += "\n" + emoji.Emoji("heavy_minus_sign") + " Supports tip amount upto 8 decimal amount/points"
 	help_text += "\n" + emoji.Emoji("warning") + " Its not recommended to use tipbot as a wallet or to exchange large amounts."
+	help_text += "\n" + emoji.Emoji("busts_in_silhouette") + "Created by @IndiaBits community Member @Funyug and @elpoep"
 	return help_text
 }
 
