@@ -12,6 +12,7 @@ import (
 	"sync"
 	"github.com/funyug/bitcoin-tipbot/emoji"
 	"errors"
+	"math"
 )
 
 type Tip struct {
@@ -301,6 +302,8 @@ func (message *Message) TipHandler(tmessage *telebot.Message) string {
 		if err != nil {
 			return emoji.Emoji("information_source") + " Correct format : tip amount reason(optional)"
 		}
+
+		amount = amount / math.Pow10(8)
 
 		if amount <= 0 {
 			return emoji.Emoji("no_entry_sign") + " Cannot tip 0 or negative amount"
