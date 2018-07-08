@@ -22,7 +22,7 @@ func InitTelegramCommands(bot *telebot.Bot) {
 
 	bot.Handle("/help",func(tmessage *telebot.Message) {
 
-		if tmessage.Chat.Type == "group" {
+		if tmessage.Chat.Type == "supergroup" {
 			bot.Delete(tmessage)
 		}
 
@@ -43,7 +43,7 @@ func InitTelegramCommands(bot *telebot.Bot) {
 
 	bot.Handle("/register",func(tmessage *telebot.Message) {
 
-		if tmessage.Chat.Type == "group" {
+		if tmessage.Chat.Type == "supergroup" {
 			bot.Delete(tmessage)
 		}
 
@@ -65,7 +65,7 @@ func InitTelegramCommands(bot *telebot.Bot) {
 
 	bot.Handle("/address",func(tmessage *telebot.Message) {
 
-		if tmessage.Chat.Type == "group" {
+		if tmessage.Chat.Type == "supergroup" {
 			bot.Delete(tmessage)
 		}
 
@@ -81,7 +81,7 @@ func InitTelegramCommands(bot *telebot.Bot) {
 
 	bot.Handle("/balance",func(tmessage *telebot.Message) {
 
-		if tmessage.Chat.Type == "group" {
+		if tmessage.Chat.Type == "supergroup" {
 			bot.Delete(tmessage)
 		}
 
@@ -97,7 +97,7 @@ func InitTelegramCommands(bot *telebot.Bot) {
 
 	bot.Handle("/withdraw",func(tmessage *telebot.Message) {
 
-		if tmessage.Chat.Type == "group" {
+		if tmessage.Chat.Type == "supergroup" {
 			bot.Delete(tmessage)
 		}
 
