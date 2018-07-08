@@ -31,7 +31,7 @@ func (tip *Tip) Create() error {
 
 func (message *Message) HelpHandler() string {
 	help_text := ""
-	help_text = emoji.Emoji("white_check_mark") + " Welcome to the Indiabits tipbot. Start by sending /register to create an account and start using the bot."
+	help_text = emoji.Emoji("white_check_mark") + " Welcome to the Indiabits tipbot."
 	help_text += "\n\nCommands:"
 	help_text += "\n" + emoji.Emoji("heavy_minus_sign") + " /register: Register an account. Make sure you have a telegram username. Your funds are associated with your telegram username so withdraw all your funds if you decide to change your telegram username"
 	help_text += "\n" + emoji.Emoji("heavy_minus_sign") + " /address: Get your bitcoin deposit address"

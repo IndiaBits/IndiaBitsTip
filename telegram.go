@@ -42,13 +42,18 @@ func InitTelegramCommands(bot *telebot.Bot) {
 	})
 
 	bot.Handle("/register",func(tmessage *telebot.Message) {
+
+		if tmessage.Chat.Type == "group" {
+			bot.Delete(tmessage)
+		}
+
 		message, err := NewMessage(tmessage)
 		if err != nil {
 			response := err.Error()
 			bot.Send(tmessage.Sender, response)
 		}
 		response := message.RegisterHandler(tmessage)
-		bot.Send(tmessage.Chat, response)
+		bot.Send(tmessage.Sender, response)
 		UpdateResponse(response, *message)
 
 		if strings.Contains(response, "Successfully registered") {
