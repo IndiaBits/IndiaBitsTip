@@ -60,6 +60,7 @@ func storeMessage(tmessage *telebot.Message) (*Message, error) {
 	message.UserId = user.Id
 	message.Message = tmessage.Text
 	message.ReceivedAt = time.Now()
+	message.RepliedAt = time.Now()
 
 	err = message.create()
 	if err != nil {

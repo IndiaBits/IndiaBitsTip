@@ -28,8 +28,10 @@ func InitTelegramCommands(bot *telebot.Bot) {
 
 		message, err := NewMessage(tmessage)
 		if err != nil {
-			response := err.Error()
+			log.Println(err.Error())
+			response := "Something went wrong"
 			bot.Send(tmessage.Sender, response)
+			return
 		}
 		response := message.HelpHandler()
 		_, err = bot.Send(tmessage.Sender, response, &telebot.SendOptions{
@@ -49,8 +51,10 @@ func InitTelegramCommands(bot *telebot.Bot) {
 
 		message, err := NewMessage(tmessage)
 		if err != nil {
-			response := err.Error()
+			log.Println(err.Error())
+			response := "Something went wrong"
 			bot.Send(tmessage.Sender, response)
+			return
 		}
 		response := message.RegisterHandler(tmessage)
 		bot.Send(tmessage.Sender, response)
@@ -71,8 +75,10 @@ func InitTelegramCommands(bot *telebot.Bot) {
 
 		message, err := NewMessage(tmessage)
 		if err != nil {
-			response := err.Error()
+			log.Println(err.Error())
+			response := "Something went wrong"
 			bot.Send(tmessage.Sender, response)
+			return
 		}
 		response := message.GetAddressHandler(tmessage)
 		bot.Send(tmessage.Sender, response)
@@ -87,8 +93,10 @@ func InitTelegramCommands(bot *telebot.Bot) {
 
 		message, err := NewMessage(tmessage)
 		if err != nil {
-			response := err.Error()
+			log.Println(err.Error())
+			response := "Something went wrong"
 			bot.Send(tmessage.Sender, response)
+			return
 		}
 		response := message.BalanceHandler(tmessage)
 		bot.Send(tmessage.Sender, response)
@@ -128,8 +136,10 @@ func InitTelegramCommands(bot *telebot.Bot) {
 	bot.Handle("/tip", func(tmessage *telebot.Message) {
 		message, err := NewMessage(tmessage)
 		if err != nil {
-			response := err.Error()
+			log.Println(err.Error())
+			response := "Something went wrong"
 			bot.Send(tmessage.Sender, response)
+			return
 		}
 		response := message.TipHandler(tmessage)
 		bot.Send(tmessage.Chat, response)
@@ -140,8 +150,10 @@ func InitTelegramCommands(bot *telebot.Bot) {
 		if strings.Index(strings.ToUpper(tmessage.Text),"TIP") == 0 {
 			message, err := NewMessage(tmessage)
 			if err != nil {
-				response := err.Error()
+				log.Println(err.Error())
+				response := "Something went wrong"
 				bot.Send(tmessage.Sender, response)
+				return
 			}
 			response := message.TipHandler(tmessage)
 			bot.Send(tmessage.Chat, response)

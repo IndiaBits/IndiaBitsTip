@@ -124,12 +124,15 @@ func ProcessTransactions() {
 func ProcessWithdrawal(bot *telebot.Bot,tmessage *telebot.Message) {
 	message, err := NewMessage(tmessage)
 	if err != nil {
-		response := err.Error()
+		log.Println(err.Error())
+		response := "Something went wrong"
 		bot.Send(tmessage.Sender, response)
+		return
 	}
 
 	if tmessage.Sender.Username == "" {
 		bot.Send(tmessage.Sender, emoji.Emoji("information_source") + " You need to have a username to use this bot.")
+		return
 	}
 
 	user, err := findUser(tmessage.Sender.Username)
@@ -138,11 +141,13 @@ func ProcessWithdrawal(bot *telebot.Bot,tmessage *telebot.Message) {
 			response := "You must be registered to use the bot"
 			bot.Send(tmessage.Sender, response)
 			UpdateResponse(response, *message)
+			return
 		} else {
 			log.Println(err)
 			response := "Something went wrong."
 			bot.Send(tmessage.Sender, response)
 			UpdateResponse(response, *message)
+			return
 		}
 	}
 
