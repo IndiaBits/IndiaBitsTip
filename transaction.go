@@ -1,25 +1,25 @@
 package main
 
 import (
-	"log"
+	"github.com/IndiaBits/IndiaBitsTip/emoji"
 	"github.com/jinzhu/gorm"
-	"time"
-	"sync"
 	"gopkg.in/tucnak/telebot.v2"
+	"log"
 	"os"
 	"strconv"
-	"github.com/funyug/bitcoin-tipbot/emoji"
+	"sync"
+	"time"
 )
 
 type Transaction struct {
-	Id int
-	Type int
-	Amount float64
-	UserId int
-	Address string
-	MessageId int
+	Id            int
+	Type          int
+	Amount        float64
+	UserId        int
+	Address       string
+	MessageId     int
 	TransactionId string
-	Confirmed int
+	Confirmed     int
 }
 
 func (transaction *Transaction) Create() error {
@@ -32,13 +32,13 @@ func (transaction *Transaction) Update() error {
 	return DB.Error
 }
 
-func (transaction *Transaction) Find() ([]Transaction,error) {
+func (transaction *Transaction) Find() ([]Transaction, error) {
 	var transactions []Transaction
 	DB.Find(&transactions, transaction)
 	return transactions, DB.Error
 }
 
-func (transaction *Transaction) First() (error) {
+func (transaction *Transaction) First() error {
 	err := DB.Where(transaction).First(transaction)
 	return err.Error
 }
@@ -56,7 +56,7 @@ func ProcessTransactions() {
 			continue
 		}
 
-		for _,tx := range transactions {
+		for _, tx := range transactions {
 
 			if tx.Category == "send" {
 				continue
@@ -69,11 +69,11 @@ func ProcessTransactions() {
 			}
 
 			new_tx := Transaction{
-				Type:1,
-				Address: tx.Address,
-				Amount:tx.Amount,
-				UserId:user.Id,
-				TransactionId:tx.TxID,
+				Type:          1,
+				Address:       tx.Address,
+				Amount:        tx.Amount,
+				UserId:        user.Id,
+				TransactionId: tx.TxID,
 			}
 
 			err = new_tx.First()
@@ -101,7 +101,7 @@ func ProcessTransactions() {
 						continue
 					}
 
-					if(BalanceMutexes[user.Username] == nil) {
+					if BalanceMutexes[user.Username] == nil {
 						BalanceMutexes[user.Username] = &sync.Mutex{}
 					}
 
@@ -121,7 +121,7 @@ func ProcessTransactions() {
 	}
 }
 
-func ProcessWithdrawal(bot *telebot.Bot,tmessage *telebot.Message) {
+func ProcessWithdrawal(bot *telebot.Bot, tmessage *telebot.Message) {
 	message, err := NewMessage(tmessage)
 	if err != nil {
 		log.Println(err.Error())
@@ -131,7 +131,7 @@ func ProcessWithdrawal(bot *telebot.Bot,tmessage *telebot.Message) {
 	}
 
 	if tmessage.Sender.Username == "" {
-		bot.Send(tmessage.Sender, emoji.Emoji("information_source") + " You need to have a username to use this bot.")
+		bot.Send(tmessage.Sender, emoji.Emoji("information_source")+" You need to have a username to use this bot.")
 		return
 	}
 
@@ -151,7 +151,7 @@ func ProcessWithdrawal(bot *telebot.Bot,tmessage *telebot.Message) {
 		}
 	}
 
-	if(BalanceMutexes[user.Username] == nil) {
+	if BalanceMutexes[user.Username] == nil {
 		BalanceMutexes[user.Username] = &sync.Mutex{}
 	}
 
@@ -161,7 +161,7 @@ func ProcessWithdrawal(bot *telebot.Bot,tmessage *telebot.Message) {
 
 	BalanceMutexes[user.Username].Unlock()
 	bot.Send(tmessage.Sender, response, &telebot.SendOptions{
-		ParseMode:"HTML",
+		ParseMode: "HTML",
 	})
 	UpdateResponse(response, *message)
 }

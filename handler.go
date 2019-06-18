@@ -1,27 +1,27 @@
 package main
 
 import (
+	"errors"
+	"github.com/IndiaBits/IndiaBitsTip/emoji"
+	"github.com/btcsuite/btcd/chaincfg"
+	"github.com/btcsuite/btcutil"
+	"github.com/jinzhu/gorm"
 	"gopkg.in/tucnak/telebot.v2"
 	"log"
-	"github.com/jinzhu/gorm"
+	"math"
+	"os"
 	"strconv"
 	"strings"
-	"github.com/btcsuite/btcutil"
-	"github.com/btcsuite/btcd/chaincfg"
-	"os"
 	"sync"
-	"github.com/funyug/bitcoin-tipbot/emoji"
-	"errors"
-	"math"
 )
 
 type Tip struct {
-	Id int
-	FromId int
-	ToId int
-	MessageId int
+	Id                int
+	FromId            int
+	ToId              int
+	MessageId         int
 	TelegramMessageId int
-	Amount float64
+	Amount            float64
 }
 
 func (tip *Tip) Create() error {
@@ -108,7 +108,7 @@ func (message *Message) BalanceHandler(tmessage *telebot.Message) string {
 	user, err := findUser(tmessage.Sender.Username)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return emoji.Emoji("information_source")+" You must be registered to use the bot"
+			return emoji.Emoji("information_source") + " You must be registered to use the bot"
 		} else {
 			log.Println(err)
 			return emoji.Emoji("no_entry_sign") + " Something went wrong."
@@ -116,19 +116,19 @@ func (message *Message) BalanceHandler(tmessage *telebot.Message) string {
 	}
 
 	transaction := Transaction{
-		Type:1,
-		Confirmed:2,
-		UserId:user.Id,
+		Type:      1,
+		Confirmed: 2,
+		UserId:    user.Id,
 	}
 
 	unconfirmed_balance := 0.00
 
-	transactions,err := transaction.Find()
+	transactions, err := transaction.Find()
 	for _, transaction = range transactions {
 		unconfirmed_balance += transaction.Amount
 	}
 
-	confirmed_balance_text := emoji.Emoji("white_check_mark") + " Balance: " + strconv.FormatFloat(user.Balance,'f', 8, 64) + " BTC\n"
+	confirmed_balance_text := emoji.Emoji("white_check_mark") + " Balance: " + strconv.FormatFloat(user.Balance, 'f', 8, 64) + " BTC\n"
 	unconfirmed_balance_text := emoji.Emoji("information_source") + " Pending: " + strconv.FormatFloat(unconfirmed_balance, 'f', 8, 64) + " BTC"
 	if len(transactions) < 1 {
 		unconfirmed_balance_text = ""
@@ -151,7 +151,7 @@ func (message *Message) WithdrawHandler(tmessage *telebot.Message) string {
 		}
 	}
 
-	data := strings.Split(tmessage.Payload," ")
+	data := strings.Split(tmessage.Payload, " ")
 	if len(data) < 2 {
 		return emoji.Emoji("information_source") + " Correct format: /withdraw address amount"
 	}
@@ -182,13 +182,13 @@ func (message *Message) WithdrawHandler(tmessage *telebot.Message) string {
 		return emoji.Emoji("information_source") + " Amount is less than the minimum amount required to withdraw " + os.Getenv("MINIMUM_AMOUNT_TO_WITHDRAW")
 	}
 
-	withdrawal_fee, err := strconv.ParseFloat(os.Getenv("WITHDRAWAL_FEE"),  64)
+	withdrawal_fee, err := strconv.ParseFloat(os.Getenv("WITHDRAWAL_FEE"), 64)
 	if err != nil {
 		log.Println(err)
 		return emoji.Emoji("no_entry_sign") + " Something went wrong"
 	}
 
-	if user.Balance < amount  {
+	if user.Balance < amount {
 		return emoji.Emoji("no_entry_sign") + " Insufficient balance!"
 	}
 
@@ -210,12 +210,12 @@ func (message *Message) WithdrawHandler(tmessage *telebot.Message) string {
 	}*/
 
 	transaction := Transaction{
-		UserId: user.Id,
-		Type: 2,
-		Amount: amount,
+		UserId:    user.Id,
+		Type:      2,
+		Amount:    amount,
 		MessageId: message.Id,
-		Confirmed:1,
-		Address:address.String(),
+		Confirmed: 1,
+		Address:   address.String(),
 	}
 	if err := transaction.Create(); err != nil {
 		log.Println(err)
@@ -249,8 +249,8 @@ func (message *Message) WithdrawHandler(tmessage *telebot.Message) string {
 		log.Println(err)
 	}
 
-	amount_sent := strconv.FormatFloat((amount-withdrawal_fee), 'g', 8, 64 )
-	return emoji.Emoji("ballot_box_with_check") + " Sent " + amount_sent + " BTC with tx id: <a href=\"https://www.blockchain.com/en/btc/tx/"+ tx.String() + "\">"+tx.String()+"</a>"
+	amount_sent := strconv.FormatFloat((amount - withdrawal_fee), 'g', 8, 64)
+	return emoji.Emoji("ballot_box_with_check") + " Sent " + amount_sent + " BTC with tx id: <a href=\"https://www.blockchain.com/en/btc/tx/" + tx.String() + "\">" + tx.String() + "</a>"
 }
 
 func (message *Message) TipHandler(tmessage *telebot.Message) string {
@@ -290,7 +290,7 @@ func (message *Message) TipHandler(tmessage *telebot.Message) string {
 		return emoji.Emoji("information_source") + " You cannot tip yourself"
 	}
 
-	data := strings.Split(tmessage.Text," ")
+	data := strings.Split(tmessage.Text, " ")
 	if len(data) < 2 {
 		return emoji.Emoji("information_source") + " Correct format : tip amount reason(optional)"
 	}
@@ -319,11 +319,11 @@ func (message *Message) TipHandler(tmessage *telebot.Message) string {
 		return emoji.Emoji("information_source") + " Amount must be greater than 1 satoshi"
 	}
 
-	if(BalanceMutexes[user.Username] == nil) {
+	if BalanceMutexes[user.Username] == nil {
 		BalanceMutexes[user.Username] = &sync.Mutex{}
 	}
 
-	if(BalanceMutexes[otheruser.Username] == nil) {
+	if BalanceMutexes[otheruser.Username] == nil {
 		BalanceMutexes[otheruser.Username] = &sync.Mutex{}
 	}
 
@@ -343,11 +343,11 @@ func (message *Message) TipHandler(tmessage *telebot.Message) string {
 	otheruser.Update()
 
 	tip := Tip{
-		FromId: user.Id,
-		ToId: otheruser.Id,
-		Amount:amount,
-		MessageId: message.Id,
-		TelegramMessageId:tmessage.ReplyTo.ID,
+		FromId:            user.Id,
+		ToId:              otheruser.Id,
+		Amount:            amount,
+		MessageId:         message.Id,
+		TelegramMessageId: tmessage.ReplyTo.ID,
 	}
 
 	err = tip.Create()
@@ -369,7 +369,7 @@ func (message *Message) TipHandler(tmessage *telebot.Message) string {
 	BalanceMutexes[user.Username].Unlock()
 	BalanceMutexes[otheruser.Username].Unlock()
 
-	amount_text := strconv.FormatFloat(amount, 'f',8,64)
+	amount_text := strconv.FormatFloat(amount, 'f', 8, 64)
 
 	return emoji.Emoji("ballot_box_with_check") + " @" + user.Username + " tipped " + amount_text + " btc to " + "@" + otheruser.Username
 }
@@ -417,12 +417,12 @@ func withdrawalValidations(tmessage *telebot.Message) string {
 		}
 	}
 
-	data := strings.Split(tmessage.Payload," ")
+	data := strings.Split(tmessage.Payload, " ")
 	if len(data) < 2 {
 		return emoji.Emoji("information_source") + " Correct format: /withdraw address amount"
 	}
 
-	_ , err = getAddress(data[0])
+	_, err = getAddress(data[0])
 	if err != nil {
 		return emoji.Emoji("information_source") + " Please enter a valid bitcoin address"
 	}
@@ -448,7 +448,7 @@ func withdrawalValidations(tmessage *telebot.Message) string {
 		return emoji.Emoji("information_source") + " Amount is less than the minimum amount required to withdraw " + os.Getenv("MINIMUM_AMOUNT_TO_WITHDRAW")
 	}
 
-	withdrawal_fee, err := strconv.ParseFloat(os.Getenv("WITHDRAWAL_FEE"),  64)
+	withdrawal_fee, err := strconv.ParseFloat(os.Getenv("WITHDRAWAL_FEE"), 64)
 	if err != nil {
 		log.Println(err)
 		return emoji.Emoji("no_entry_sign") + " Something went wrong"
@@ -458,7 +458,7 @@ func withdrawalValidations(tmessage *telebot.Message) string {
 		return emoji.Emoji("no_entry_sign") + " Insufficient balance!"
 	}
 
-	_ , err = btcutil.NewAmount((amount - withdrawal_fee))
+	_, err = btcutil.NewAmount((amount - withdrawal_fee))
 	if err != nil {
 		log.Println(err)
 		return emoji.Emoji("information_source") + " Please enter a valid amount"
