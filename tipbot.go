@@ -1,14 +1,14 @@
 package main
 
 import (
-	"github.com/joho/godotenv"
-	"log"
-	"github.com/jinzhu/gorm"
-	"os"
+	"fmt"
 	"github.com/btcsuite/btcd/rpcclient"
-	"gopkg.in/tucnak/telebot.v2"
-	"time"
+	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"github.com/joho/godotenv"
+	"gopkg.in/tucnak/telebot.v2"
+	"log"
+	"os"
 	"sync"
 )
 
@@ -28,7 +28,7 @@ func main() {
 	initRPC()
 	defer Client.Shutdown()
 
-	go ProcessTransactions()
+	/*go ProcessTransactions()
 
 	bot, err := telebot.NewBot(telebot.Settings{
 		Token:  os.Getenv("TELEGRAM_TOKEN"),
@@ -41,13 +41,21 @@ func main() {
 
 	InitTelegramCommands(bot)
 	log.Println("Server started..")
-	bot.Start()
+	bot.Start()*/
+
+	for {
+		address, err := generateAddress()
+		if err != nil {
+			fmt.Print(err)
+		}
+		fmt.Println(address)
+	}
 
 }
 
 func initRPC() {
 	connCfg := &rpcclient.ConnConfig{
-		Host:         os.Getenv("RPC_HOST")+ ":"+os.Getenv("RPC_PORT"),
+		Host:         os.Getenv("RPC_HOST") + ":" + os.Getenv("RPC_PORT"),
 		User:         os.Getenv("RPC_USER"),
 		Pass:         os.Getenv("RPC_PASS"),
 		HTTPPostMode: true,
