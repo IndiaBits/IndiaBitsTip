@@ -50,7 +50,7 @@ func ProcessTransactions() {
 	}
 	time.Sleep(120 * time.Second)
 	for {
-		transactions, err := Client.ListTransactions("")
+		transactions, err := Client.ListTransactions("*")
 		if err != nil {
 			log.Println(err)
 			continue

@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"github.com/IndiaBits/IndiaBitsTip/emoji"
 	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/btcsuite/btcutil"
@@ -395,8 +396,9 @@ func findUserByAddress(address string) (*User, error) {
 }
 
 func getAddress(addr string) (btcutil.Address, error) {
-	address, err := btcutil.DecodeAddress(addr, &chaincfg.Params{})
+	address, err := btcutil.DecodeAddress(addr, &chaincfg.MainNetParams)
 	if err != nil {
+		fmt.Println(err)
 		return nil, err
 	}
 	return address, nil
